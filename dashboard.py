@@ -32,6 +32,8 @@ section = st.sidebar.radio("Navigation", [
 ])
 
 IMAGE_SIZE = 300
+PRELOADED_IMAGE_PATH = "dataset/"
+# Sidebar for model selection
 model_selection = st.sidebar.selectbox("Select Model", ["DenseNet121", "Custom"])
 model_path = f"models/{model_selection.lower()}/"
 
@@ -110,10 +112,10 @@ def preload_images(image_path, image_size=(IMAGE_SIZE, IMAGE_SIZE)):
     test_images_df = details_df[details_df["Usage"] == "Testing"]
 
     # Select random 5 samples for each class
-    samples_per_class = 5
+    samples_per_class = 1
     sampled_df = (
         test_images_df.groupby("Label", group_keys=False)
-        .apply(lambda x: x.sample(n=min(samples_per_class, len(x)), random_state=42))
+        .apply(lambda x: x.sample(n=min(samples_per_class, len(x)), random_state=10))
         .reset_index(drop=True)
     )
 
@@ -432,7 +434,7 @@ elif section == "Inferencing":
         
 
     selected_image = None
-    preload_images("/mnt/e/github_source_code/liver_fibrosis/Fibrosis_Dataset/Dataset/")
+    preload_images(PRELOADED_IMAGE_PATH)
 
     col1, col2, col3 = st.columns([0.8, 1, 1.2])
     image = None
