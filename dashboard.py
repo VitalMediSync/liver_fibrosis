@@ -31,8 +31,9 @@ section = st.sidebar.radio("Navigation", [
     "Inferencing"
 ])
 
-IMAGE_SIZE = 300
+IMAGE_SIZE = 224 
 PRELOADED_IMAGE_PATH = "dataset/"
+#PRELOADED_IMAGE_PATH = '/mnt/e/github_source_code/liver_fibrosis/Fibrosis_Dataset/Dataset/'
 # Sidebar for model selection
 model_selection = st.sidebar.selectbox("Select Model", ["DenseNet121", "Custom"])
 model_path = f"models/{model_selection.lower()}/"
@@ -69,7 +70,11 @@ def load_model_densenet():
         # The original DenseNet121 classifier is nn.Sequential(nn.Dropout(...), nn.Linear(...))
         # We replace the final Linear layer
         num_ftrs = model.classifier.in_features
-        model.classifier = nn.Linear(num_ftrs, len(class_labels)) # Set the output layer to match the number of classes
+        #model.classifier = nn.Linear(num_ftrs, len(class_labels)) # Set the output layer to match the number of classes
+        model.classifier = nn.Sequential(
+            nn.Dropout(0.5), # Assuming dropout was used and saved with the model
+            nn.Linear(num_ftrs, len(class_labels)) # Set the output layer to match the number of classes
+        )
         model.load_state_dict(torch.load(f"{model_path}/liver_fibrosis.pt", map_location=device))
         model.eval()
 
@@ -102,7 +107,7 @@ eval_report = load_eval_report()
 
 def preload_images(image_path, image_size=(IMAGE_SIZE, IMAGE_SIZE)):
     # Enhanced grid layout with image selection using button under each image
-    st.subheader("🔍 Select from Preloaded Images")
+    st.subheader("Select from preloaded ultrasound images :")
     preloaded_images = []
     preloaded_captions = []
 
@@ -173,12 +178,10 @@ def apply_gradcam_on_image(img, mask):
     return np.uint8(255 * cam)
 
 
-
-
 # Updated prediction function with Grad-CAM++
 def gradcam_image(orig_img, model, input_tensor, pred_idx, class_names, target_layer):
 
-    st.subheader("Grad-CAM++ Visualization")
+    st.subheader("Grad-CAM Visualization")
     st.subheader("")
 
     if model is not None and orig_img is not None:
@@ -283,6 +286,7 @@ def load_dataset_details(dataset_details_file="dataset_details.csv"):
         plt.close(fig5)
 
         # 6. Count of images by Label and Usage
+        st.subheader('Distribution of Images by Fibrosis Level and Dataset Split')
         fig6, ax6 = plt.subplots(figsize=(12, 6))
         sns.countplot(x='Label', hue='Usage', data=details_df, order=sorted(details_df['Label'].unique()), hue_order=['Training', 'Validation', 'Testing'], ax=ax6)
         ax6.set_title('Distribution of Images by Fibrosis Level and Dataset Split')
@@ -354,8 +358,7 @@ def show_roc_curve(eval_report):
                 st.info("ROC curve data not available.")
 
 
-# Section: Project Overview
-if section == "Project Overview":
+def show_project_overview():
     st.title("Liver Fibrosis Classification")
     st.markdown("""
     This project focuses on the classification of Liver Fibrosis, a critical aspect of assessing liver health. Utilizing ultrasound as a non-invasive imaging method and deep learning techniques, the aim is to categorize fibrosis into various stages (e.g., F0-F4). This approach offers a less intrusive alternative to traditional biopsy. The initiative provides a clear overview of the clinical problem and the role of advanced computational techniques in supporting medical diagnosis through image analysis. The ultimate goal is to facilitate early and accurate assessment of liver fibrosis for improved patient management.
@@ -371,6 +374,44 @@ if section == "Project Overview":
         # Placeholder for an image
         st.image("logo.png", width=700, caption="Liver Fibrosis")
 
+
+TOTAL_SLIDES = 5
+def slide_show():
+    images = [] 
+    for i in range (TOTAL_SLIDES):
+        images.append(f"slides/{i+1}.png")
+
+    # Initialize session state for slide index
+    if "slide_index" not in st.session_state:
+        st.session_state.slide_index = 0
+
+    col01, col02 = st.columns([1, 0.28])
+    with col01:
+        # Show the current image
+        st.image(images[st.session_state.slide_index], use_container_width=True)
+
+    col1, col2 = st.columns([1, 1])
+    # Button controls
+    with col1:
+        if st.button("Backward"):
+            if st.session_state.slide_index > 0:
+                st.session_state.slide_index -= 1
+            else:
+                st.session_state.slide_index = len(images) - 1  # Loop to last image
+    with col2:
+        if st.button("Forward"):
+            if st.session_state.slide_index < len(images) - 1:
+                st.session_state.slide_index += 1
+            else:
+                st.session_state.slide_index = 0  # Loop to first image
+
+    # Optional: Show slide number
+    #st.write(f"Image {st.session_state.slide_index + 1} of {len(images)}")
+
+# Section: Project Overview
+if section == "Project Overview":
+    #show_project_overview()
+    slide_show()
 
 # Section: Data Summary
 elif section == "Data Summary":
@@ -417,7 +458,7 @@ elif section == "Evaluation Report":
 
 # Section: Inference
 elif section == "Inferencing":
-    st.title("Upload or Select an Image")
+    st.title("Inferencing")
 
     model = None
     def preprocess_image(image):
@@ -443,7 +484,7 @@ elif section == "Inferencing":
     pred_label = None
 
     with col1:
-        st.subheader("Or  Upload liver ultrasound image :")
+        st.subheader("Upload ultrasound image :")
 
         uploaded_file = st.file_uploader("", type=["jpg", "jpeg", "png"])
         if uploaded_file:
