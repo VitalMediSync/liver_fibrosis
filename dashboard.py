@@ -119,12 +119,30 @@ def preload_images(image_path, image_size=(IMAGE_SIZE, IMAGE_SIZE)):
     test_images_df = details_df[details_df["Usage"] == "Testing"]
 
     # Select random 5 samples for each class
-    samples_per_class = 1
-    sampled_df = (
-        test_images_df.groupby("Label", group_keys=False)
-        .apply(lambda x: x.sample(n=min(samples_per_class, len(x)), random_state=10))
-        .reset_index(drop=True)
-    )
+    #samples_per_class = 1
+    #sampled_df = (
+    #    test_images_df.groupby("Label", group_keys=False)
+    #    .apply(lambda x: x.sample(n=min(samples_per_class, len(x)), random_state=10))
+    #    .reset_index(drop=True)
+    #)
+    # Instead of random sampling, select specific images based on given keys
+    key_images = {
+        "F0_1": "F0/a4413.jpg",
+        "F0_2": "F0/i7.jpg",
+        "F1_1": "F1/N4237.jpg",
+        "F1_2": "F1/i4560.jpg",
+        "F2_1": "F2/ct8-14.png",
+        "F2_2": "F2/w4101.jpg",
+        "F3_1": "F3/m5275.jpg",
+        "F3_2": "F3/x6271.jpg",
+        "F4_1": "F4/F9025.jpg",
+        "F4_2": "F4/K5461.jpg"
+    }
+    sampled_df = details_df[details_df.apply(lambda row: row["Path"] in key_images.values(), axis=1)]
+    # Ensure the order matches the keys
+    sampled_df = pd.concat([
+        sampled_df[sampled_df["Path"] == key_images[label]] for label in key_images if any(sampled_df["Path"] == key_images[label])
+    ], ignore_index=True)
 
     for idx, row in sampled_df.iterrows():
         preloaded_images.append(row["Path"])
@@ -216,18 +234,18 @@ def load_dataset_details(dataset_details_file="dataset_details.csv"):
         details_df = pd.read_csv(dataset_details_file)
         #st.success(f"DataFrame loaded successfully from {dataset_details_file}")
         # Display the first 5 rows with a bigger font using st.markdown and to_html
-        st.markdown(
-            details_df.head(5).to_html(index=False, escape=False),
-            unsafe_allow_html=True,
-        )
-        st.markdown(
-            """
-            <style>
-            table.dataframe {font-size: 18px !important;}
-            </style>
-            """,
-            unsafe_allow_html=True,
-        )
+        #st.markdown(
+        #    details_df.head(5).to_html(index=False, escape=False),
+        #    unsafe_allow_html=True,
+        #)
+        #st.markdown(
+        #    """
+        #       <style>
+        #       table.dataframe {font-size: 18px !important;}
+        #       </style>
+        #   """,
+        #   unsafe_allow_html=True,
+        #)
 
         # 1. Distribution of images by Label
         st.subheader("Distribution of Images by Fibrosis Level")
@@ -250,42 +268,42 @@ def load_dataset_details(dataset_details_file="dataset_details.csv"):
         plt.close(fig2)
 
         # 3. Distribution of image sizes (Kernel Density Estimate plot)
-        st.subheader("Distribution of Image Sizes (KB)")
-        fig3, ax3 = plt.subplots(figsize=(10, 6))
-        sns.histplot(details_df['Size (KB)'], bins=50, kde=True, ax=ax3)
-        ax3.set_title('Distribution of Image Sizes (KB)')
-        ax3.set_xlabel('Size (KB)')
-        ax3.set_ylabel('Frequency')
-        st.pyplot(fig3)
-        plt.close(fig3)
+        #st.subheader("Distribution of Image Sizes (KB)")
+        #fig3, ax3 = plt.subplots(figsize=(10, 6))
+        #sns.histplot(details_df['Size (KB)'], bins=50, kde=True, ax=ax3)
+        #ax3.set_title('Distribution of Image Sizes (KB)')
+        #ax3.set_xlabel('Size (KB)')
+        #ax3.set_ylabel('Frequency')
+        #st.pyplot(fig3)
+        #plt.close(fig3)
 
         # 4. Distribution of images by Grayscale/RGB
-        st.subheader("Distribution of Images by Color Mode")
-        fig4, ax4 = plt.subplots(figsize=(6, 4))
-        sns.countplot(x='Color Type', data=details_df, ax=ax4, width=0.3, palette='viridis') # Corrected column name
-        ax4.set_title('Distribution of Images by Color Mode')
-        ax4.set_xlabel('Color Mode')
-        ax4.set_ylabel('Number of Images')
-        st.pyplot(fig4)
-        plt.close(fig4)
+        #st.subheader("Distribution of Images by Color Mode")
+        #fig4, ax4 = plt.subplots(figsize=(6, 4))
+        #sns.countplot(x='Color Type', data=details_df, ax=ax4, width=0.3, palette='viridis') # Corrected column name
+        #ax4.set_title('Distribution of Images by Color Mode')
+        #ax4.set_xlabel('Color Mode')
+        #ax4.set_ylabel('Number of Images')
+        #st.pyplot(fig4)
+        #plt.close(fig4)
 
         # 5. Distribution of images by Resolution (Top N resolutions)
-        st.subheader("Top Image Resolutions")
-        # Count occurrences of each resolution
-        resolution_counts = details_df['Resolution'].value_counts().reset_index()
-        resolution_counts.columns = ['Resolution', 'Count']
+        #st.subheader("Top Image Resolutions")
+        ## Count occurrences of each resolution
+        #resolution_counts = details_df['Resolution'].value_counts().reset_index()
+        #resolution_counts.columns = ['Resolution', 'Count']
 
         # Display top 10 resolutions (adjust as needed)
-        top_n_resolutions = 10
-        fig5, ax5 = plt.subplots(figsize=(12, 6))
-        sns.barplot(x='Resolution', y='Count', data=resolution_counts.head(top_n_resolutions), ax=ax5, width=0.3, palette='viridis')
-        ax5.set_title(f'Top {top_n_resolutions} Image Resolutions')
-        ax5.set_xlabel('Resolution')
-        ax5.set_ylabel('Number of Images')
-        ax5.tick_params(axis='x', rotation=45) # Rotate labels for better readability
-        plt.tight_layout() # Adjust layout to prevent labels overlapping
-        st.pyplot(fig5)
-        plt.close(fig5)
+        #top_n_resolutions = 10
+        #fig5, ax5 = plt.subplots(figsize=(12, 6))
+        #sns.barplot(x='Resolution', y='Count', data=resolution_counts.head(top_n_resolutions), ax=ax5, width=0.3, palette='viridis')
+        #ax5.set_title(f'Top {top_n_resolutions} Image Resolutions')
+        #ax5.set_xlabel('Resolution')
+        #ax5.set_ylabel('Number of Images')
+        #ax5.tick_params(axis='x', rotation=45) # Rotate labels for better readability
+        #plt.tight_layout() # Adjust layout to prevent labels overlapping
+        #st.pyplot(fig5)
+        #plt.close(fig5)
 
         # 6. Count of images by Label and Usage
         st.subheader('Distribution of Images by Fibrosis Level and Dataset Split')
@@ -484,7 +502,8 @@ elif section == "Inferencing":
     selected_image = None
     preload_images(PRELOADED_IMAGE_PATH)
 
-    col1, col2, col3 = st.columns([0.8, 1, 1.2])
+    #col1, col2, col3 = st.columns([0.8, 1, 1.2])
+    col1, col2 = st.columns([0.8, 1.2])
     image = None
     probs = None
     pred_idx = None
@@ -512,20 +531,20 @@ elif section == "Inferencing":
                 probs = torch.nn.functional.softmax(output[0], dim=0).numpy()
                 pred_idx = np.argmax(probs)
                 pred_label = class_labels[pred_idx]
+                
+    #with col2:
+    #    # Grad-CAM visualization ---
+    #    if model is not None and image is not None:
+    #        inference_transform = transforms.Compose([
+    #            transforms.Resize((IMAGE_SIZE, IMAGE_SIZE)),
+    #            transforms.ToTensor(),
+    #            transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+    #        ])
+
+    #        target_layer = model.features.norm5
+    #        gradcam_image(image, model, input_tensor, pred_idx, class_labels, target_layer)  
+    
     with col2:
-        # Grad-CAM visualization ---
-        if False:
-            if model is not None and image is not None:
-                inference_transform = A.Compose([
-                    A.Resize(IMAGE_SIZE, IMAGE_SIZE),
-                    A.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
-                    ToTensorV2()
-                ])
-
-                target_layer = model.features.norm5
-                gradcam_image(image, model, input_tensor, pred_idx, class_labels, target_layer)  
-
-    with col3:
         if model is not None and image is not None:
             st.markdown(f"### Predicted Class: **{pred_label}**")
             st.subheader("")
