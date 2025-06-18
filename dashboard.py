@@ -18,6 +18,8 @@ import cv2
 from pytorch_grad_cam.utils.model_targets import ClassifierOutputTarget
 from pytorch_grad_cam import GradCAMPlusPlus
 from pytorch_grad_cam.utils.image import show_cam_on_image, preprocess_image
+import albumentations as A
+from albumentations.pytorch import ToTensorV2
 
 # Page config and title
 st.set_page_config(page_title="Liver Fibrosis Dashboard", layout="wide")
@@ -465,13 +467,15 @@ elif section == "Inferencing":
 
     model = None
     def preprocess_image(image):
-        transform = transforms.Compose([
-            transforms.Resize((IMAGE_SIZE, IMAGE_SIZE)),
-            transforms.ToTensor(),
-            transforms.Normalize([0.485, 0.456, 0.406],
-                                 [0.229, 0.224, 0.225])
+        transform = A.Compose([
+            A.Resize(IMAGE_SIZE, IMAGE_SIZE),
+            A.Normalize([0.485, 0.456, 0.406],
+                                 [0.229, 0.224, 0.225]),
+            ToTensorV2()
         ])
-        return transform(image.convert('RGB')).unsqueeze(0)
+        image_np = np.array(image.convert('RGB'))
+        tensor = transform(image=image_np)['image']
+        return tensor.unsqueeze(0)
 
     if model_selection == "DenseNet121":
         model = load_model_densenet()
@@ -502,7 +506,7 @@ elif section == "Inferencing":
 
         # Load the model and do prediction
         if model is not None and image is not None:
-            input_tensor = preprocess_image(image)
+            input_tensor = preprocess_image(image=image)
             with torch.no_grad():
                 output = model(input_tensor)
                 probs = torch.nn.functional.softmax(output[0], dim=0).numpy()
@@ -510,15 +514,16 @@ elif section == "Inferencing":
                 pred_label = class_labels[pred_idx]
     with col2:
         # Grad-CAM visualization ---
-        if model is not None and image is not None:
-            inference_transform = transforms.Compose([
-                transforms.Resize((IMAGE_SIZE, IMAGE_SIZE)),
-                transforms.ToTensor(),
-                transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
-            ])
+        if False:
+            if model is not None and image is not None:
+                inference_transform = A.Compose([
+                    A.Resize(IMAGE_SIZE, IMAGE_SIZE),
+                    A.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
+                    ToTensorV2()
+                ])
 
-            target_layer = model.features.norm5
-            gradcam_image(image, model, input_tensor, pred_idx, class_labels, target_layer)  
+                target_layer = model.features.norm5
+                gradcam_image(image, model, input_tensor, pred_idx, class_labels, target_layer)  
 
     with col3:
         if model is not None and image is not None:
