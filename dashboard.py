@@ -24,7 +24,7 @@ st.set_page_config(page_title="Liver Fibrosis Dashboard", layout="wide")
 
 # Sidebar menu
 section = st.sidebar.radio("Navigation", [
-    "Project Overview",
+    "Overview",
     "Data Summary",
     "Training Metrics",
     "Evaluation Report",
@@ -393,13 +393,13 @@ def slide_show():
     col1, col2 = st.columns([1, 1])
     # Button controls
     with col1:
-        if st.button("Backward"):
+        if st.button("< Back"):
             if st.session_state.slide_index > 0:
                 st.session_state.slide_index -= 1
             else:
                 st.session_state.slide_index = len(images) - 1  # Loop to last image
     with col2:
-        if st.button("Forward"):
+        if st.button("Next >"):
             if st.session_state.slide_index < len(images) - 1:
                 st.session_state.slide_index += 1
             else:
@@ -408,16 +408,17 @@ def slide_show():
     # Optional: Show slide number
     #st.write(f"Image {st.session_state.slide_index + 1} of {len(images)}")
 
-# Section: Project Overview
-if section == "Project Overview":
+# Section: Overview
+if section == "Overview":
     #show_project_overview()
     slide_show()
 
 # Section: Data Summary
 elif section == "Data Summary":
-    st.title("Dataset Summary")
+    st.title("Data Summary")
     col1, col2, col3 = st.columns([0.5, 1, 0.5])
     with col2:
+        st.subheader("Ultrasound Image Overview")
         load_dataset_details()
 
 
@@ -442,7 +443,9 @@ elif section == "Evaluation Report":
     col1, col2, col3 = st.columns([0.5, 1, 0.5])
     with col2:
         if eval_report is not None:
-            #st.markdown(f"### Test Accuracy: **{eval_report['accuracy']*100:.2f}%**")
+            st.subheader("Overall Test Accuracy")
+            st.markdown(f"### **{eval_report['classification_report']['accuracy']*100:.2f}%**")
+
             st.subheader("Classification Report")
             show_classification_report(eval_report)
 
