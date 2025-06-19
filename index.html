@@ -189,8 +189,7 @@
                     <h4 class="text-xl font-semibold mb-4 text-slate-800">Preprocessing & Augmentation</h4>
                     <p class="text-slate-600 mb-4">To improve model generalization and robustness, we apply a series of augmentations to the training data. This simulates real-world variability and expands the dataset. Hover over the image to see an example of augmentation.</p>
                     <div class="relative group cursor-pointer">
-                        <img src="https://placehold.co/600x450/cccccc/ffffff?text=Original+Ultrasound" alt="Original Ultrasound Image" class="rounded-lg w-full transition-opacity duration-300 group-hover:opacity-0">
-                        <img src="https://placehold.co/600x450/aaaaaa/ffffff?text=Augmented+Image+(Flipped+%26+Rotated)" alt="Augmented Ultrasound Image" class="rounded-lg w-full absolute top-0 left-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+                        <img src="dataset/F1/i4560.jpg">
                     </div>
                 </div>
             </div>
@@ -245,6 +244,7 @@
             <h3 class="section-title">Defense of the Solution</h3>
             <p class="section-subtitle">Our approach directly addresses the core business problem by balancing accuracy, interpretability, and practical implementation risks.</p>
             <div class="grid lg:grid-cols-2 gap-8">
+                <!--
                 <div class="card">
                     <h4 class="text-xl font-semibold mb-4 text-slate-800">Interpretability: Opening the Black Box</h4>
                     <p class="text-slate-600 mb-4">To build clinical trust, we don't just provide a classification. We use Grad-CAM (Gradient-weighted Class Activation Mapping) to create heatmaps that highlight which regions of the ultrasound image most influenced the model's decision. Hover to see a simulation.</p>
@@ -253,6 +253,7 @@
                         <div class="grad-cam-overlay"></div>
                     </div>
                 </div>
+                -->
                 <div class="card">
                     <h4 class="text-xl font-semibold mb-4 text-slate-800">Risk Assessment & Mitigation</h4>
                     <dl class="space-y-4 text-slate-600">
