@@ -25,20 +25,54 @@ from albumentations.pytorch import ToTensorV2
 st.set_page_config(page_title="Liver Fibrosis Dashboard", layout="wide")
 
 # Sidebar menu
-section = st.sidebar.radio("Navigation", [
-    "Overview",
-    "Data Summary",
-    "Training Metrics",
-    "Evaluation Report",
-    "Inferencing"
+section = st.sidebar.radio("", [
+        "📊 Presentation",
+        "📁 Data Summary",
+        "📈 Training Metrics",
+        "📝 Evaluation Report",
+        "🔍 Inferencing"
 ])
+
+slides_heading = [
+    "Introduction",
+    "Bridging Diagnostic Gap",
+    "Potential Benefits: Transforming Liver Care​",
+    "Dataset Overview​",
+    "Preprocessing Pipeline for Deep Learning Readiness​",
+    "Capabilities of Computer Vision Models​",
+    "Models And Approaches Considered For Image Classification​",
+    "Model Selection Criteria",
+    "DenseNet121 Architecture",
+    "DenseNet121 Architecture Components",
+    "Model Training",
+    "Validation Approach",
+    "Evaluation Metrics",
+    "Benefits",
+    "Trade-offs, Risks & Mitigation",
+    "Business Value",
+    "Future Work",
+    "Thank You"          
+]
+
+reduce_padding_style = """
+    <style>
+        div.block-container {
+            padding-top: 5rem;    /* Adjust this value as needed */
+            padding-bottom: 1rem;
+            padding-left: 8rem;
+            padding-right: 1rem;
+        }
+    </style>
+"""
+st.markdown(reduce_padding_style, unsafe_allow_html=True)
 
 IMAGE_SIZE = 224 
 PRELOADED_IMAGE_PATH = "dataset/"
 #PRELOADED_IMAGE_PATH = '/mnt/e/github_source_code/liver_fibrosis/Fibrosis_Dataset/Dataset/'
 # Sidebar for model selection
-model_selection = st.sidebar.selectbox("Select Model", ["DenseNet121", "Custom"])
-model_path = f"models/{model_selection.lower()}/"
+#model_selection = st.sidebar.selectbox("Select Model", ["DenseNet121", "Custom"])
+#model_path = f"models/{model_selection.lower()}/"
+model_path = "models/densenet121/"
 
 # Reload training and evaluation data when model changes
 @st.cache_data
@@ -138,6 +172,7 @@ def preload_images(image_path, image_size=(IMAGE_SIZE, IMAGE_SIZE)):
         "F4_1": "F4/F9025.jpg",
         "F4_2": "F4/K5461.jpg"
     }
+
     sampled_df = details_df[details_df.apply(lambda row: row["Path"] in key_images.values(), axis=1)]
     # Ensure the order matches the keys
     sampled_df = pd.concat([
@@ -395,46 +430,82 @@ def show_project_overview():
         st.image("logo.png", width=700, caption="Liver Fibrosis")
 
 
-TOTAL_SLIDES = 5
+TOTAL_SLIDES = 18
 def slide_show():
     images = [] 
     for i in range (TOTAL_SLIDES):
-        images.append(f"slides/{i+1}.png")
+        images.append(f"slides/Slide{i+1}.jpg")
 
     # Initialize session state for slide index
     if "slide_index" not in st.session_state:
         st.session_state.slide_index = 0
 
-    col01, col02 = st.columns([1, 0.28])
+    col01, col02 = st.columns([1, 0.1])
     with col01:
         # Show the current image
-        st.image(images[st.session_state.slide_index], use_container_width=True)
+        with st.container(border=True):
+            st.image(images[st.session_state.slide_index], use_container_width=True)
 
-    col1, col2 = st.columns([1, 1])
+            
+    col1, col2, col3 = st.columns([1, 1, 1])
     # Button controls
     with col1:
-        if st.button("< Back"):
+
+        if st.button("◀ Back"):
             if st.session_state.slide_index > 0:
                 st.session_state.slide_index -= 1
             else:
                 st.session_state.slide_index = len(images) - 1  # Loop to last image
+            st.rerun()        
     with col2:
-        if st.button("Next >"):
+
+        # Dropdown to jump to a specific slide (no label, aligned with buttons)
+        slide_numbers = [f"Slide {i+1} ➤ {slides_heading[i]} " for i in range(TOTAL_SLIDES)]
+        # Remove label by setting label_visibility="collapsed"
+        selected_slide = st.selectbox(
+            "",  # No label
+            slide_numbers,
+            index=st.session_state.slide_index,
+            key="slide_selectbox",
+            label_visibility="collapsed"
+        )
+        # Center the selectbox using custom CSS 
+        st.markdown(
+            """
+            <style>
+            div[data-baseweb="select"] {
+            margin-left: auto !important;
+            margin-right: auto !important;
+            width: 100% !important;
+            }
+            </style>
+            """,
+            unsafe_allow_html=True,
+        )
+        # Update slide index if dropdown changes
+        new_index = slide_numbers.index(selected_slide)
+        if new_index != st.session_state.slide_index:
+            st.session_state.slide_index = new_index
+            st.rerun()  # Force Streamlit to update the image immediately
+
+    with col3:
+        if st.button("Next ▶"):
             if st.session_state.slide_index < len(images) - 1:
                 st.session_state.slide_index += 1
             else:
                 st.session_state.slide_index = 0  # Loop to first image
+            st.rerun()        
 
-    # Optional: Show slide number
-    #st.write(f"Image {st.session_state.slide_index + 1} of {len(images)}")
 
 # Section: Overview
-if section == "Overview":
+if section == "📊 Presentation":
     #show_project_overview()
-    slide_show()
+    col1, col2, col3 = st.columns([1, 100, 1])
+    with col2:
+        slide_show()
 
 # Section: Data Summary
-elif section == "Data Summary":
+elif section == "📁 Data Summary":
     st.title("Data Summary")
     col1, col2, col3 = st.columns([0.5, 1, 0.5])
     with col2:
@@ -443,7 +514,7 @@ elif section == "Data Summary":
 
 
 # Section: Training Metrics
-elif section == "Training Metrics":
+elif section == "📈 Training Metrics":
     st.title("Training Progress")
     col1, col2, col3 = st.columns([0.5, 1, 0.5])
     with col2:
@@ -458,7 +529,7 @@ elif section == "Training Metrics":
 
 
 # Section: Evaluation Report
-elif section == "Evaluation Report":
+elif section == "📝 Evaluation Report":
     st.title("Model Evaluation")
     col1, col2, col3 = st.columns([0.5, 1, 0.5])
     with col2:
@@ -480,7 +551,7 @@ elif section == "Evaluation Report":
 
 
 # Section: Inference
-elif section == "Inferencing":
+elif section == "🔍 Inferencing":
     st.title("Inferencing")
 
     model = None
@@ -495,8 +566,8 @@ elif section == "Inferencing":
         tensor = transform(image=image_np)['image']
         return tensor.unsqueeze(0)
 
-    if model_selection == "DenseNet121":
-        model = load_model_densenet()
+    #if model_selection == "DenseNet121":
+    model = load_model_densenet()
         
 
     selected_image = None
