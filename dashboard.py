@@ -20,18 +20,70 @@ from pytorch_grad_cam import GradCAMPlusPlus
 from pytorch_grad_cam.utils.image import show_cam_on_image, preprocess_image
 import albumentations as A
 from albumentations.pytorch import ToTensorV2
+import streamlit.components.v1 as components
 
 # Page config and title
 st.set_page_config(page_title="Liver Fibrosis Dashboard", layout="wide")
 
+# JavaScript code for the timer
+js_code = """
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        #timer {
+            font-size: 30px;
+            font-weight: bold;
+            color: #2E86C1;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div id="timer">00:00</div>
+
+    <script>
+        function getCookie(name) {
+            let match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+            return match ? parseInt(match[2]) : 0;
+        }
+
+        function setCookie(name, value) {
+            document.cookie = name + '=' + value + '; path=/';
+        }
+
+        let totalSeconds = getCookie('totalSeconds') || 0;
+        const timerElement = document.getElementById("timer");
+
+        function updateTimer() {
+            let minutes = Math.floor(totalSeconds / 60);
+            let seconds = totalSeconds % 60;
+            let formattedTime =
+                String(minutes).padStart(2, '0') + ":" + String(seconds).padStart(2, '0');
+            timerElement.textContent = formattedTime;
+
+            totalSeconds++;
+            setCookie('totalSeconds', totalSeconds);
+        }
+
+        setInterval(updateTimer, 1000);
+    </script>
+</body>
+</html>
+"""
+
+
 # Sidebar menu
-section = st.sidebar.radio("", [
+with st.sidebar:
+    section = st.sidebar.radio("", [
         "📊 Presentation",
         "📁 Data Summary",
         "📈 Training Metrics",
         "📝 Evaluation Report",
         "🔍 Inferencing"
-])
+    ])
+    # Display the timer in Streamlit sidebar
+    components.html(js_code, height=100)
 
 slides_heading = [
     "Introduction",
@@ -64,6 +116,9 @@ reduce_padding_style = """
         }
     </style>
 """
+
+
+
 st.markdown(reduce_padding_style, unsafe_allow_html=True)
 
 IMAGE_SIZE = 224 
@@ -447,7 +502,7 @@ def slide_show():
             st.image(images[st.session_state.slide_index], use_container_width=True)
 
             
-    col1, col2, col3 = st.columns([1, 1, 1])
+    col1, col2, col3, col4 = st.columns([1, 0.5, 1, 0.45])
     # Button controls
     with col1:
 
@@ -456,8 +511,12 @@ def slide_show():
                 st.session_state.slide_index -= 1
             else:
                 st.session_state.slide_index = len(images) - 1  # Loop to last image
-            st.rerun()        
+            st.rerun()
+            
     with col2:
+        components.html(js_code, height=100)
+
+    with col3:
 
         # Dropdown to jump to a specific slide (no label, aligned with buttons)
         slide_numbers = [f"Slide {i+1} ➤ {slides_heading[i]} " for i in range(TOTAL_SLIDES)]
@@ -488,13 +547,14 @@ def slide_show():
             st.session_state.slide_index = new_index
             st.rerun()  # Force Streamlit to update the image immediately
 
-    with col3:
+    with col4:
         if st.button("Next ▶"):
             if st.session_state.slide_index < len(images) - 1:
                 st.session_state.slide_index += 1
             else:
                 st.session_state.slide_index = 0  # Loop to first image
-            st.rerun()        
+            st.rerun()
+
 
 
 # Section: Overview
@@ -615,6 +675,7 @@ elif section == "🔍 Inferencing":
     #        target_layer = model.features.norm5
     #        gradcam_image(image, model, input_tensor, pred_idx, class_labels, target_layer)  
     
+
     with col2:
         if model is not None and image is not None:
             st.markdown(f"### Predicted Class: **{pred_label}**")
