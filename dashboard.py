@@ -90,6 +90,7 @@ slides_heading = [
     "Bridging Diagnostic Gap",
     "Potential Benefits: Transforming Liver Care​",
     "Dataset Overview​",
+    "Pre-processing of Medical Images​",
     "Preprocessing Pipeline for Deep Learning Readiness​",
     "Capabilities of Computer Vision Models​",
     "Models And Approaches Considered For Image Classification​",
@@ -485,11 +486,11 @@ def show_project_overview():
         st.image("logo.png", width=700, caption="Liver Fibrosis")
 
 
-TOTAL_SLIDES = 18
+TOTAL_SLIDES = 19
 def slide_show():
     images = [] 
     for i in range (TOTAL_SLIDES):
-        images.append(f"slides/Slide{i+1}.jpg")
+        images.append(f"slides/Slide{i}.jpg")
 
     # Initialize session state for slide index
     if "slide_index" not in st.session_state:
@@ -578,6 +579,7 @@ elif section == "📈 Training Metrics":
     st.title("Training Progress")
     col1, col2, col3 = st.columns([0.5, 1, 0.5])
     with col2:
+        st.markdown('[Transfer Learning with RadImageNet](https://github.com/BMEII-AI/RadImageNet)')
         if training_df is not None:
             st.subheader("Loss over Epochs")
             st.line_chart(training_df[['train_losses', 'val_losses']])
